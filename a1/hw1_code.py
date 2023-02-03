@@ -42,9 +42,7 @@ def load_data():
     dataset_entropy = cal_dataset_entropy(trainY) # cal the inherent entropy of the dataset
     print("Dataset entropy: ", dataset_entropy)
     for word in ["trump", "donald", "hillary", "and", "this", "the"]:
-        # print("Information gain for {}: {}".format(word ,compute_information_gain(dataset_entropy, word, headlines_train, values_train)))
-        print("Information gain for {}: {}".format(word ,compute_information_gain_vectorized(dataset_entropy, word, trainX, trainY, vectorizer.get_feature_names_out())))
-    # print()    
+        print("Information gain for {}: {}".format(word ,compute_information_gain(dataset_entropy, word, trainX, trainY, vectorizer.get_feature_names_out()))) 
 
     return trainX, testX, cvX, trainY, testY, cvY, vectorizer.vocabulary_
 
@@ -142,35 +140,7 @@ def sort_dict(dictionary):
         values[idx] = values[idx][1]
     return values #list of words sorted by index
 
-def compute_information_gain(dataset_entropy, feature, headlines, values):
-    #to find I(Y, feature) = H(Y) - H(Y|feature)
-    nums_in = [0,0] # of the headlines with the feature word: (fakes, reals)
-    nums_out = [0, 0] # of those that dont include: (fakes, reals)
-    headlines = headlines.tolist() #make the numpy array a list for iteration
-    for idx, headline in enumerate(headlines):
-        if feature in headline.split(): #if the feature is a word
-            # print(feature, headline)
-            nums_in[values[idx]] += 1 #increment corresponding count
-        else:
-            nums_out[values[idx]] += 1#increment corresponding count
-
-
-    if (nums_out == [0, 0]) or (nums_in == [0, 0]):
-        print("Feature does not exist in dataset") 
-        return 0 #nothing new is learnt, information gain is 0, uncertainty remains the sxame, as H(Y) = H(Y|X)
-            
-    H_y0 = -(nums_in[0]/(nums_in[0] + nums_in[1]))*log2(nums_in[0]/(nums_in[0] + nums_in[1]))
-    H_y1 = -(nums_in[1]/(nums_in[0] + nums_in[1]))*log2(nums_in[1]/(nums_in[0] + nums_in[1]))
-
-    h_y0 = -(nums_out[0]/(nums_out[0] + nums_out[1]))*log2(nums_out[0]/(nums_out[0] + nums_out[1]))
-    h_y1 = -(nums_out[1]/(nums_out[0] + nums_out[1]))*log2(nums_out[1]/(nums_out[0] + nums_out[1]))
-    
-    # print((nums_in[0]/(nums_in[0] + nums_in[1])), (nums_in[1]/(nums_in[0] + nums_in[1])), (nums_out[0]/(nums_out[0] + nums_out[1])), (nums_out[1]/(nums_out[0] + nums_out[1])), (sum(nums_in)/(sum(nums_in) + sum(nums_out))), (sum(nums_out)/(sum(nums_in) + sum(nums_out))))
-    # print(H_y0, H_y1, h_y0, h_y1)
-    print(sum(nums_in), sum(nums_out), len(headlines), nums_out[0], nums_out[1], nums_in[1], nums_in[0])
-    return dataset_entropy - (sum(nums_in)/(sum(nums_in) + sum(nums_out)))*(H_y0 + H_y1) - (sum(nums_out)/(sum(nums_in) + sum(nums_out)))*(h_y0 + h_y1)
-
-def compute_information_gain_vectorized(dataset_entropy, feature, headlines, values, features):
+def compute_information_gain(dataset_entropy, feature, headlines, values, features):
     #to find I(Y, feature) = H(Y) - H(Y|feature)
     if feature not in features:
         return 0 # no new information is learnt, H(Y) = H(Y|X)
@@ -183,25 +153,18 @@ def compute_information_gain_vectorized(dataset_entropy, feature, headlines, val
     sample_size = headlines.shape[0]
 
     values = np.asarray(values)
-    values_in = values[mask]
-    nums_in_real = np.count_nonzero(values_in)
-    nums_in_fake = np.count_nonzero(values_in == 0)
+    values_in = values[mask] # all the labels of entries in split
+    nums_in_real = np.count_nonzero(values_in) #real ones
+    nums_in_fake = np.count_nonzero(values_in == 0) #fake ones
 
-    nums_out_real = np.count_nonzero(values[(headlines[:, feature_idx] == 0)]) 
-    nums_out_fake = values[(headlines[:, feature_idx] == 0)].shape[0] - nums_out_real
+    nums_out_real = np.count_nonzero(values[(headlines[:, feature_idx] == 0)]) # real ones outside split
+    nums_out_fake = values[(headlines[:, feature_idx] == 0)].shape[0] - nums_out_real #fake ones outside split
     H_y0 = -(nums_in_fake/(nums_in_fake + nums_in_real))*log2(nums_in_fake/(nums_in_fake + nums_in_real)) #entropy for Y given X s.t feature is in and value is fake
     H_y1 = -(nums_in_real/(nums_in_real + nums_in_fake))*log2(nums_in_real/(nums_in_real + nums_in_fake)) #entropy for Y given X s.t feature is in and value is real
     h_y0 = -(nums_out_fake/(nums_out_fake + nums_out_real))*log2(nums_out_fake/(nums_out_real + nums_out_fake)) #entropy for Y given X s.t feature is out and value is fake
     h_y1 = -(nums_out_real/(nums_out_fake + nums_out_real))*log2(nums_out_real/(nums_out_fake + nums_out_real)) #entropy for Y given X s.t feature is out and value is real
 
     return dataset_entropy - (nums_in/(sample_size))*(H_y0 + H_y1) - (nums_out/(sample_size))*(h_y0 + h_y1)
-
-
-
-
-
-
-
 
 if __name__ == "__main__":
     select_model()
