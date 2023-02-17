@@ -21,10 +21,10 @@ def logistic_predict(weights, data):
     # Given the weights and bias, compute the probabilities predicted   #
     # by the logistic classifier.                                       #
     #####################################################################
-    ones = np.ones((data.shape[0], 1))
-    data = np.concatenate((data, ones), axis=1)
-    y = np.matmul(data, weights)
-    y = sigmoid(y) #should i return this here or later to prevent numerical instabilities
+    ones = np.ones((data.shape[0], 1)) 
+    data = np.concatenate((data, ones), axis=1) #adding a column of ones in the last col of the data matrix
+    y = np.matmul(data, weights) #matrix mutliplying the design and weight matrix for linear value
+    y = sigmoid(y) #signmoided the value for output range in 0-1
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
@@ -50,10 +50,10 @@ def evaluate(targets, y):
     # return cross entropy and the fraction of inputs classified        #
     # correctly.                                                        #
     #####################################################################
-    entropy_term = ((-targets) * np.log(y)) - ((1-targets)*np.log(1-y))
-    ce = np.sum(entropy_term)/targets.shape[0]
-    classes = np.where(y >= 0.5, 1, 0)
-    frac_correct = np.count_nonzero(np.where(classes == targets, 1, 0))/targets.shape[0]
+    entropy_term = (((-1) * targets) * (np.log2(y))) - ((1-targets)*(np.log2(1-y))) #formula explained in class
+    ce = np.sum(entropy_term)/targets.shape[0] #average cross entropy
+    classes = np.where(y >= 0.5, 1, 0) #everything with more than or equal to to chance probability is class 1, rest 0
+    frac_correct = np.count_nonzero(np.where(classes == targets, 1, 0))/targets.shape[0] #counting and dividing the number of correctly classed samples (class == targets) with the total number of samples
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################
@@ -88,10 +88,10 @@ def logistic(weights, data, targets, hyperparameters):
     # points, gradient of parameters, and the probabilities given by    #
     # logistic regression.                                              #
     #####################################################################
-    ones = np.ones((data.shape[0], 1))
-    data = np.append(data, ones, axis=1)
-    f = evaluate(targets, y)[0]
-    df = (np.matmul(data.T, y-targets)) / data.shape[0]
+    ones = np.ones((data.shape[0], 1)) 
+    data = np.append(data, ones, axis=1) #appending a col of ones
+    f = evaluate(targets, y)[0] #getting the average cross entropy loss given outputs from predictor
+    df = (np.matmul(data.T, y-targets)) / data.shape[0] #gradient formula: (X.T(y - targets)/N)
     #####################################################################
     #                       END OF YOUR CODE                            #
     #####################################################################

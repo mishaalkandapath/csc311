@@ -24,7 +24,7 @@ def knn(k, train_data, train_labels, valid_data):
     :return: N_VALID x 1 vector of predicted labels for
     the validation data.
     """
-    dist = l2_distance(valid_data.T, train_data.T)
+    dist = l2_distance(valid_data.T, train_data.T) 
     nearest = np.argsort(dist, axis=1)[:, :k]
 
     train_labels = train_labels.reshape(-1)
@@ -52,11 +52,13 @@ def run_knn():
     accuracies = []
     acc1 = []
     for idx, neighbour in enumerate(neighbours):
-        labels = knn(neighbour, train_inputs, train_targets, valid_inputs).flatten().tolist()
-        total_corr = sum(val == valid_targets[ix] for ix, val in enumerate(labels))
-        accuracies += [total_corr/len(labels)]
+        labels = knn(neighbour, train_inputs, train_targets, valid_inputs).flatten().tolist() #get the predicted class values from knn
+        total_corr = sum(val == valid_targets[ix] for ix, val in enumerate(labels)) #compute the number of labels we got right
+        accuracies += [total_corr/len(labels)] #divide by number of total datapoints to have predictec to get accuracy
         print(accuracies[idx])
 
+        #using a similar procedure to find test accuracy, only doing this here rather than to do for only the chosen k value because the question asks to report
+        # test accuracie for k-2 and k+2 too. Aware that test accuracy should be checked for only the final determined model with chosen hyperparameter k    
         test_labels = knn(neighbour, train_inputs, train_targets, test_inputs).flatten().tolist()
         total_corr = sum(val == test_targets[ix] for ix, val in enumerate(test_labels))
         acc1+= [total_corr/len(test_labels)]
