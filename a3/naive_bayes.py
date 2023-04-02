@@ -92,15 +92,35 @@ def train_mle_estimator(train_images, train_labels):
     """ Inputs: train_images, train_labels
         Returns the MLE estimators theta_mle and pi_mle"""
 
-    # YOU NEED TO WRITE THIS PART
-    return theta_mle, pi_mle
+    # initialize the parameter matrices
+    theta_mle = np.zeros((784, 10))
+    pi_mle = np.zeros(10)
 
+    #load values in according to the forumale in the handout
+    for j in range(10):
+        x = (train_labels[:, j]).reshape(train_images.shape[0], 1)
+        theta_mle[:, j] = np.sum(train_images * np.tile(x, (1, 784)), axis = 0) / np.sum (train_labels[: j])
+
+    pi_mle = np.sum(train_labels, axis=0) / train_labels.shape[0]
+        
+    return theta_mle, pi_mle
 
 def train_map_estimator(train_images, train_labels):
     """ Inputs: train_images, train_labels
         Returns the MAP estimators theta_map and pi_map"""
     
-    # YOU NEED TO WRITE THIS PART
+    # initialize the parameter matrices
+    theta_map = np.zeros((784, 10))
+    pi_map = np.zeros(10)
+
+    #priors remians the same
+    pi_map = np.sum(train_labels, axis=0) / train_labels.shape[0]
+
+    #load values in according to the forumale in the handout
+    for j in range(10):
+        x = (train_labels[:, j]).reshape(train_images.shape[0], 1)
+        theta_map[:, j] = (np.sum((train_images * np.tile(x, (1, 784))), axis = 0) + 2) / (np.sum (train_labels[:, j]) + 4)
+
     return theta_map, pi_map
 
 
@@ -112,6 +132,21 @@ def log_likelihood(images, theta, pi):
     Note that log likelihood is not only for c^(i), it is for all possible c's."""
 
     # YOU NEED TO WRITE THIS PART
+    # log_like = np.zeros((images.shape[0], 10))
+    # for i in range(images.shape[0]):
+    #     denom = np.sum(np.log(pi)) + np.sum(images[i] * np.log(theta) + (1 - images[i]) * np.log(1 - theta))
+    #     denom1 = 0
+    #     for j in range(10):
+    #         denom1 += (np.log(pi[j]) + np.sum(images[i] * np.log(theta[j]) + (1 - images[i]) * np.log(1 - theta[j])))
+    #     for j in range(10):
+    #         log_like[i][j] = (np.log(pi[j]) + np.sum(images[i] * np.log(theta[j]) + (1 - images[i]) * np.log(1 - theta[j])))/denom
+    denom = np.zeros(images.shape[0])
+    for i in range(10):
+        x = (theta[:, i].T).reshape(1, 784)
+        denom += np.sum(images * np.log(np.tile(x, (images.shape[0], 1))), axis = 1) + np.sum((1 - images) * np.log(1 - np.tile(x, (images.shape[0], 1))), axis = 1)
+    denom += np.sum(np.log(pi))
+    log_like = (images @ np.log(theta) + (1-images) @ np.log(1-theta)) + np.log(pi)#np.tile(np.log(pi).reshape(-1, 1), (images.shape[0], 10))  #the numerator for each of the log_likes
+    log_like = log_like#/ np.tile(denom.reshape(-1, 1),(1, 10))
 
     return log_like
 
@@ -120,7 +155,10 @@ def predict(log_like):
     """ Inputs: matrix of log likelihoods
     Returns the predictions based on log likelihood values"""
 
-    # YOU NEED TO WRITE THIS PART
+    predictions = np.zeros(log_like.shape)
+    for i in range(log_like.shape[0]):
+        x = log_like[i, :]
+        predictions[i, :] = np.where(x == np.max(x), 1, 0)
     return predictions
 
 
@@ -128,7 +166,8 @@ def accuracy(log_like, labels):
     """ Inputs: matrix of log likelihoods and 1-of-K labels
     Returns the accuracy based on predictions from log likelihood values"""
 
-    # YOU NEED TO WRITE THIS PART
+    predictions = predict(log_like)
+    acc = np.sum([np.array_equal(predictions[i, :], labels[i, :]) for i in range(labels.shape[0])]) / labels.shape[0]
     return acc
 
 
