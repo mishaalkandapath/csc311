@@ -131,22 +131,13 @@ def log_likelihood(images, theta, pi):
     log_like is a matrix of num of images x num of classes
     Note that log likelihood is not only for c^(i), it is for all possible c's."""
 
-    # YOU NEED TO WRITE THIS PART
-    # log_like = np.zeros((images.shape[0], 10))
-    # for i in range(images.shape[0]):
-    #     denom = np.sum(np.log(pi)) + np.sum(images[i] * np.log(theta) + (1 - images[i]) * np.log(1 - theta))
-    #     denom1 = 0
-    #     for j in range(10):
-    #         denom1 += (np.log(pi[j]) + np.sum(images[i] * np.log(theta[j]) + (1 - images[i]) * np.log(1 - theta[j])))
-    #     for j in range(10):
-    #         log_like[i][j] = (np.log(pi[j]) + np.sum(images[i] * np.log(theta[j]) + (1 - images[i]) * np.log(1 - theta[j])))/denom
-    denom = np.zeros(images.shape[0])
-    for i in range(10):
-        x = (theta[:, i].T).reshape(1, 784)
-        denom += np.sum(images * np.log(np.tile(x, (images.shape[0], 1))), axis = 1) + np.sum((1 - images) * np.log(1 - np.tile(x, (images.shape[0], 1))), axis = 1)
-    denom += np.sum(np.log(pi))
-    log_like = (images @ np.log(theta) + (1-images) @ np.log(1-theta)) + np.log(pi)#np.tile(np.log(pi).reshape(-1, 1), (images.shape[0], 10))  #the numerator for each of the log_likes
-    log_like = log_like#/ np.tile(denom.reshape(-1, 1),(1, 10))
+    # denom = np.zeros(images.shape[0])
+    # for i in range(10):
+    #     x = (theta[:, i].T).reshape(1, 784)
+    #     denom += np.sum(images * np.log(np.tile(x, (images.shape[0], 1))), axis = 1) + np.sum((1 - images) * np.log(1 - np.tile(x, (images.shape[0], 1))), axis = 1)
+    # denom += np.sum(np.log(pi))
+    log_like = (images @ np.log(theta) + (1-images) @ np.log(1-theta)) + np.log(pi)
+    log_like = log_like
 
     return log_like
 
