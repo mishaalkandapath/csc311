@@ -130,12 +130,7 @@ def log_likelihood(images, theta, pi):
     log_like[i,c] = log p (c |x^(i), theta, pi) using the estimators theta and pi.
     log_like is a matrix of num of images x num of classes
     Note that log likelihood is not only for c^(i), it is for all possible c's."""
-
-    # denom = np.zeros(images.shape[0])
-    # for i in range(10):
-    #     x = (theta[:, i].T).reshape(1, 784)
-    #     denom += np.sum(images * np.log(np.tile(x, (images.shape[0], 1))), axis = 1) + np.sum((1 - images) * np.log(1 - np.tile(x, (images.shape[0], 1))), axis = 1)
-    # denom += np.sum(np.log(pi))
+    
     log_like = (images @ np.log(theta) + (1-images) @ np.log(1-theta)) + np.log(pi)
     log_like = log_like
 
