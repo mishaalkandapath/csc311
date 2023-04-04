@@ -47,8 +47,9 @@ def compute_sigma_mles(train_data, train_labels):
 
 def compute_data_over_class(digits, means, covariance, label):
     ret_matrix = np.zeros((1, digits.shape[0]))
+    #set all non-diag elements of covariance to 0 
+    # covariance[label] = np.diag(np.diag(covariance[label])) #for part 4c
     det = np.linalg.det(covariance[label])
-    # print(digits.shape, means[label].reshape(-1, 1).T.shape, covariance.shape)
     const_factor = -32 * np.log((2 * np.pi)) -0.5* np.log(det)
     i = 0
     for xin in digits:
