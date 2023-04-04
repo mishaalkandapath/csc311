@@ -49,12 +49,16 @@ def compute_data_over_class(digits, means, covariance, label):
     ret_matrix = np.zeros((1, digits.shape[0]))
     det = np.linalg.det(covariance[label])
     # print(digits.shape, means[label].reshape(-1, 1).T.shape, covariance.shape)
-    for i, xin in enumerate(digits):
-        xin = xin.reshape(-1, 1).T
-        x = -0.5 * (det ** -1) * (xin - means[label].reshape(-1, 1).T) @ (xin - means[label].reshape(-1, 1).T).T
-        ret_matrix[0][i] = x
-    # print(x.shape0)
-    return np.logaddexp(0, (np.pi ** (-32)) * ( det ** -0.5) * np.exp(ret_matrix))
+    const_factor = -32 * np.log((2 * np.pi)) -0.5* np.log(det)
+    i = 0
+    for xin in digits:
+        xin = xin.reshape(-1, 1)
+        # print(xin.shape, means[label].reshape(-1, 1).shape)
+        main_factor = -0.5 * (xin - means[label].reshape(-1, 1)).T @ np.linalg.inv(covariance[label]) @ (xin - means[label].reshape(-1, 1))
+        ret_matrix[0][i] = const_factor + main_factor
+        i += 1
+
+    return ret_matrix
 
 def generative_likelihood(digits, means, covariances):
     '''
@@ -90,22 +94,21 @@ def avg_conditional_likelihood(digits, labels, means, covariances):
 
     i.e. the average log likelihood that the model assigns to the correct class label
     '''
-    cond_likelihood = conditional_likelihood(digits, means, covariances)
     # Compute as described above and return
-    return np.average(cond_likelihood, axis=1)
+    return np.average(digits, axis=1)
 
 def classify_data(digits, means, covariances):
     '''
     Classify new points by taking the most likely posterior class
     '''
-    cond_likelihood = conditional_likelihood(digits, means, covariances)
     # Compute and return the most likely class
-    return np.argmax(cond_likelihood, axis=1)
+    print(np.argmax(digits, axis=1))
+    return np.argmax(digits, axis=1)
 
 def accuracy(predictions, labels):
     """ Inputs: matrix of log likelihoods and 1-of-K labels
     Returns the accuracy based on predictions from log likelihood values"""
-    print(predictions.shape, labels.shape)
+    # print(predictions.shape, labels.shape)
     acc = np.sum(predictions == labels) / labels.shape[0]
     return acc
 
@@ -118,14 +121,14 @@ def main():
 
     # Evaluation
     log_like_train = conditional_likelihood(train_data, means, covariances)
-    class_trains = classify_data(train_data, means, covariances)
+    class_trains = classify_data(log_like_train, means, covariances)
     accuracy_train = accuracy(class_trains, train_labels)
     log_like_test  = conditional_likelihood(test_data, means, covariances)
-    class_test = classify_data(test_data, means, covariances)
-    accuracy_test = accuracy(log_like_test, test_labels)
+    class_test = classify_data(log_like_test, means, covariances)
+    accuracy_test = accuracy(class_test, test_labels)
 
-    print("Average log likelihood on train {}".format(avg_conditional_likelihood(train_data, train_labels, means, covariances)))
-    print("Average log likelihood on test {}".format(avg_conditional_likelihood(test_data, test_labels, means, covariances)))
+    print("Average log likelihood on train {}".format(avg_conditional_likelihood(log_like_train, train_labels, means, covariances)))
+    print("Average log likelihood on test {}".format(avg_conditional_likelihood(log_like_test, test_labels, means, covariances)))
     print("Accuracy on train {}".format(accuracy_train))
     print("Accuracy on test {}".format(accuracy_test))
 
